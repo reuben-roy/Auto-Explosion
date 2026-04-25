@@ -1,6 +1,15 @@
 import { NextResponse } from 'next/server';
 import JSZip from 'jszip';
 
+// Increase body size limit for large ZIP uploads (100MB)
+export const config = {
+  api: {
+    bodyParser: {
+      sizeLimit: '100mb',
+    },
+  },
+};
+
 export async function POST(request) {
   try {
     console.log('API: Received request');
