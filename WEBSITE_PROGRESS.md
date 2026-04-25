@@ -12,17 +12,16 @@ Transform explosion.fun from a personal portfolio into a **tools destination** �
 - [x] SSH access confirmed
 - [x] Agent "explosion" configured in OpenClaw
 
+## Completed Tasks
+- [x] Fix duplicate next.config.js + next.config.mjs → single next.config.js
+- [x] Add YouTube Channel Analyzer tool at /tools/youtube-analyzer
+- [x] Create API route at /api/youtube-analyze (demo mode + API key ready)
+
 ## Rebuild Plan
 
-### Phase 1: Universal YouTube Analyzer (REBUILD)
-**Current state:** YouTube Scholar is hardcoded with Reuben's data — beautiful viz but not a tool.
-**Goal:** Anyone enters a YouTube channel URL → gets rich analytics + visualizations.
-
-**Approach:**
-1. Build a channel analyzer form (input: channel URL/ID)
-2. Use YouTube Data API or scrape to get channel data
-3. Apply the existing D3 visualization engine to any channel
-4. Users see: subscriber growth, content patterns, engagement analysis
+### Phase 1: Universal YouTube Analyzer ✓ (LAUNCHED, NEEDS API KEY)
+**Status:** Tool exists at /tools/youtube-analyzer with demo mode
+**Next:** Add YOUTUBE_DATA_API_KEY environment variable to Vercel
 
 ### Phase 2: DataStory — CSV Visualizer
 Upload any CSV → get animated, shareable visualization stories.
@@ -30,26 +29,25 @@ Upload any CSV → get animated, shareable visualization stories.
 ### Phase 3: Map My Migration (Universal)
 Users upload GPS/location history → compare to bird migration patterns.
 
-## Tear Down
+## Tear Down (Pending)
 - CEO affair post (not a tool)
 - Solar system demo (passive demo, not a tool)
 - Old blog ranking structure (passive consumption)
-- Duplicate next.config.js + next.config.mjs
+- Personal portfolio Hero section (replaced by tools focus)
 
 ## Keep/Refactor
 - Bird migration data + visualization engine
 - YouTube Scholar D3 components (reusable)
 - Core Next.js setup + Vercel deployment
-
-## Current Task: Phase 1 — Universal YouTube Analyzer
-**Steps:**
-1. Set up YouTube Data API integration
-2. Create channel input form
-3. Fetch + transform channel data
-4. Connect to existing D3 visualization components
-5. Deploy universal analytics tool
+- Navbar + navigation structure
 
 ## Tech Notes
-- YouTube Data API v3 needed
+- YouTube Data API v3 needed for live data
 - Current D3 components are reusable
 - Vercel auto-deploy from main branch
+
+## Next Steps
+1. Set YOUTUBE_DATA_API_KEY in Vercel environment variables
+2. Add more visualizations to the YouTube analyzer
+3. Build Phase 2: CSV Visualizer tool
+4. Teardown passive content pages
