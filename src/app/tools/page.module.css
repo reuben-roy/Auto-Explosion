@@ -1,0 +1,189 @@
+.main {
+  min-height: 100vh;
+  background: linear-gradient(180deg, #0a0a0f 0%, #111118 100%);
+  padding-bottom: 4rem;
+}
+
+.hero {
+  padding: 6rem 2rem 3rem;
+  text-align: center;
+  max-width: 700px;
+  margin: 0 auto;
+}
+
+.hero h1 {
+  font-size: 3rem;
+  font-weight: 700;
+  margin-bottom: 1rem;
+  background: linear-gradient(135deg, #67c1b8 0%, #f2a65a 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+.subtitle {
+  font-size: 1.15rem;
+  color: #8f98a7;
+  line-height: 1.7;
+}
+
+.toolsGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(340px, 1fr));
+  gap: 1.5rem;
+  max-width: 1100px;
+  margin: 0 auto;
+  padding: 0 2rem;
+}
+
+.toolCard {
+  display: flex;
+  gap: 1.5rem;
+  padding: 1.75rem;
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 16px;
+  text-decoration: none;
+  color: inherit;
+  transition: all 0.25s ease;
+}
+
+.toolCard:hover {
+  transform: translateY(-3px);
+  border-color: rgba(103, 193, 184, 0.4);
+  box-shadow: 0 8px 32px rgba(103, 193, 184, 0.12);
+}
+
+.toolCardDisabled {
+  opacity: 0.7;
+  cursor: not-allowed;
+}
+
+.toolCardDisabled:hover {
+  transform: none;
+  border-color: rgba(255, 255, 255, 0.08);
+  box-shadow: none;
+}
+
+.toolIcon {
+  flex-shrink: 0;
+  width: 56px;
+  height: 56px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: linear-gradient(135deg, rgba(103, 193, 184, 0.15) 0%, rgba(242, 166, 90, 0.15) 100%);
+  border-radius: 12px;
+  color: #67c1b8;
+}
+
+.toolContent {
+  flex: 1;
+  min-width: 0;
+}
+
+.toolHeader {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 0.75rem;
+  margin-bottom: 0.5rem;
+}
+
+.toolHeader h2 {
+  font-size: 1.15rem;
+  font-weight: 600;
+  color: #f5f5f4;
+  margin: 0;
+}
+
+.status {
+  flex-shrink: 0;
+  padding: 0.2rem 0.6rem;
+  font-size: 0.7rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  border-radius: 12px;
+}
+
+.statusLive {
+  background: rgba(34, 197, 94, 0.2);
+  color: #22c55e;
+}
+
+.statusDemo {
+  background: rgba(251, 191, 36, 0.2);
+  color: #fbbf24;
+}
+
+.statusComingSoon {
+  background: rgba(255, 255, 255, 0.1);
+  color: #a8a29e;
+}
+
+.category {
+  display: inline-block;
+  font-size: 0.75rem;
+  color: #67c1b8;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  margin-bottom: 0.75rem;
+}
+
+.description {
+  font-size: 0.9rem;
+  color: #8f98a7;
+  line-height: 1.6;
+  margin: 0;
+}
+
+.comingSoonBadge {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  margin-top: 1rem;
+  font-size: 0.8rem;
+  color: #57534e;
+}
+
+.cta {
+  max-width: 500px;
+  margin: 4rem auto;
+  padding: 2.5rem;
+  text-align: center;
+  background: rgba(255, 255, 255, 0.02);
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  border-radius: 20px;
+}
+
+.cta h2 {
+  font-size: 1.25rem;
+  margin-bottom: 0.75rem;
+  color: #f5f5f4;
+}
+
+.cta p {
+  font-size: 0.9rem;
+  color: #8f98a7;
+  line-height: 1.7;
+  margin-bottom: 1.5rem;
+}
+
+.ctaButton {
+  display: inline-flex;
+  align-items: center;
+  padding: 0.75rem 1.5rem;
+  background: linear-gradient(135deg, #67c1b8 0%, #4a9e96 100%);
+  color: #0a0a0f;
+  font-weight: 600;
+  font-size: 0.9rem;
+  border-radius: 10px;
+  text-decoration: none;
+  transition: all 0.2s ease;
+}
+
+.ctaButton:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(103, 193, 184, 0.3);
+}
