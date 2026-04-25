@@ -3,10 +3,15 @@ import JSZip from 'jszip';
 
 export async function POST(request) {
   try {
+    console.log('API: Received request');
     const formData = await request.formData();
     const files = formData.getAll('files');
     
+    console.log('API: Files received:', files.length);
+    files.forEach((f, i) => console.log(`API: File ${i}:`, f.name, f.size, f.type));
+    
     if (!files || files.length === 0) {
+      console.log('API: No files found');
       return NextResponse.json(
         { error: 'No files uploaded' },
         { status: 400 }
@@ -17,15 +22,22 @@ export async function POST(request) {
     let parsedData;
     
     if (files.length === 1 && files[0].name.endsWith('.zip')) {
-      // Handle ZIP upload
+      console.log('API: Processing ZIP file');
       parsedData = await parseZipFile(files[0]);
     } else {
-      // Handle folder upload
+      console.log('API: Processing loose files');
       parsedData = await parseTakeoutFiles(files);
     }
     
+    console.log('API: Parsed data:', {
+      watchHistory: parsedData.watchHistory.length,
+      searchHistory: parsedData.searchHistory.length,
+      subscriptions: parsedData.subscriptions.length,
+    });
+    
     // Process into analytics format
     const analytics = processIntoAnalytics(parsedData);
+    console.log('API: Analytics generated');
     
     return NextResponse.json(analytics);
   } catch (error) {
@@ -47,8 +59,15 @@ async function parseZipFile(zipFile) {
   };
 
   try {
+    console.log('ZIP: Starting extraction, file size:', zipFile.size);
     const zip = new JSZip();
     const contents = await zip.loadAsync(zipFile);
+    console.log('ZIP: Loaded, files found:', Object.keys(contents.files).length);
+    
+    // Log all files found
+    Object.keys(contents.files).forEach(path => {
+      console.log('ZIP: Found file:', path);
+    });
     
     for (const [filePath, file] of Object.entries(contents.files)) {
       if (file.dir) continue; // Skip directories

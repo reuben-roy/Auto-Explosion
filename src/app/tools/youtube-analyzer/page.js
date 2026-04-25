@@ -54,32 +54,44 @@ export default function YouTubeAnalyzerPage() {
   const [progress, setProgress] = useState({ current: 0, total: 0, message: '' });
 
   const handleFileUpload = useCallback(async (files) => {
+    console.log('Upload started, files:', files.length, files[0]?.name);
     setUploadState('uploading');
     setError(null);
     
     try {
       const formData = new FormData();
-      for (let i = 0; i < files.length; i++) {
-        formData.append('files', files[i]);
+      
+      // Handle both FileList and Array
+      const fileArray = Array.from(files);
+      console.log('File array:', fileArray.map(f => f.name));
+      
+      for (const file of fileArray) {
+        formData.append('files', file);
       }
 
       setUploadState('processing');
-      setProgress({ current: 0, total: files.length, message: 'Reading files...' });
+      setProgress({ current: 0, total: fileArray.length, message: 'Reading files...' });
 
+      console.log('Sending request to /api/youtube-analyze');
       const response = await fetch('/api/youtube-analyze', {
         method: 'POST',
         body: formData,
       });
 
+      console.log('Response status:', response.status);
+      
       if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData.error || 'Failed to process files');
+        const errorData = await response.json().catch(() => ({ error: 'Unknown error' }));
+        console.error('API error:', errorData);
+        throw new Error(errorData.error || `Failed to process files (${response.status})`);
       }
 
       const result = await response.json();
+      console.log('Result:', result);
       setData(result);
       setUploadState('done');
     } catch (err) {
+      console.error('Upload error:', err);
       setError(err.message);
       setUploadState('error');
     }
@@ -88,6 +100,7 @@ export default function YouTubeAnalyzerPage() {
   const handleDrop = useCallback((e) => {
     e.preventDefault();
     const files = e.dataTransfer.files;
+    console.log('Drop event, files:', files.length);
     if (files.length > 0) {
       handleFileUpload(files);
     }
@@ -95,6 +108,7 @@ export default function YouTubeAnalyzerPage() {
 
   const handleFileSelect = useCallback((e) => {
     const files = e.target.files;
+    console.log('File select event, files:', files.length, files[0]?.name);
     if (files.length > 0) {
       handleFileUpload(files);
     }
