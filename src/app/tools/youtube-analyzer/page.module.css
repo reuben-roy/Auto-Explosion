@@ -1,19 +1,17 @@
 /* ============================================
-   YouTube Takeout Analyzer — Design Rules Applied
+   YouTube Takeout Analyzer
    ============================================ */
 
 .main {
   min-height: 100vh;
   background: #030303;
-  padding: 0 2rem 4rem;
+  padding: 5rem 2rem 4rem;
 }
 
 /* Hero Section */
 .hero {
-  padding: 5rem 2rem 3rem;
   text-align: center;
-  background: linear-gradient(180deg, #0a0a0f 0%, #030303 100%);
-  border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+  margin-bottom: 3rem;
 }
 
 .heroContent h1 {
@@ -21,24 +19,24 @@
   font-weight: 800;
   margin-bottom: 1rem;
   letter-spacing: -0.03em;
-  background: linear-gradient(135deg, #67c1b8 0%, #f2a65a 100%);
+  background: linear-gradient(to bottom right, #ffffff 30%, #a1a1aa 100%);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
+  background-clip: text;
 }
 
 .subtitle {
   font-size: 1.1rem;
   color: #a1a1aa;
   max-width: 600px;
-  margin: 0 auto 1rem;
+  margin: 0 auto 1.5rem;
   line-height: 1.6;
 }
 
-.privacyNote {
+.privacyBadge {
   display: inline-flex;
   align-items: center;
   gap: 0.5rem;
-  margin-top: 1rem;
   padding: 0.5rem 1rem;
   background: rgba(103, 193, 184, 0.1);
   border: 1px solid rgba(103, 193, 184, 0.2);
@@ -50,7 +48,7 @@
 /* Upload Section */
 .uploadSection {
   max-width: 700px;
-  margin: 3rem auto;
+  margin: 0 auto;
   padding: 0 1rem;
 }
 
@@ -61,8 +59,7 @@
   padding: 4rem 2rem;
   text-align: center;
   transition: all 0.25s ease;
-  background: rgba(103, 193, 184, 0.02);
-  overflow: hidden;
+  background: rgba(255, 255, 255, 0.02);
 }
 
 /* Animated gradient border on hover */
@@ -87,7 +84,7 @@
 
 .dropZone:hover {
   border-color: transparent;
-  background: rgba(103, 193, 184, 0.05);
+  background: rgba(103, 193, 184, 0.03);
 }
 
 .dropZoneContent h2 {
@@ -96,9 +93,9 @@
   margin-bottom: 0.75rem;
 }
 
-.dropZoneContent > p {
+.orText {
   color: #57534e;
-  margin: 0.75rem 0;
+  margin: 0.5rem 0;
 }
 
 .uploadIcon {
@@ -227,7 +224,7 @@
 /* Results Section */
 .results {
   max-width: 1000px;
-  margin: 3rem auto;
+  margin: 0 auto;
   padding: 0 1rem;
 }
 
@@ -324,7 +321,7 @@
 .categoryItem {
   padding-bottom: 1.5rem;
   border-bottom: 1px solid rgba(255, 255, 255, 0.05);
-  transition: all 0.2s ease;
+  transition: padding-left 0.2s ease;
 }
 
 .categoryItem:last-child {
@@ -403,7 +400,7 @@
 }
 
 .channelItem:hover {
-  background: rgba(0, 0, 0, 0.4);
+  background: rgba(0, 0, 0, 0.5);
   transform: translateX(4px);
 }
 
@@ -493,31 +490,10 @@
   }
 }
 
-@keyframes shimmer {
-  0% {
-    background-position: -200% 0;
-  }
-  100% {
-    background-position: 200% 0;
-  }
-}
-
-/* Skeleton Loading (for future enhancement) */
-.skeleton {
-  background: linear-gradient(
-    90deg,
-    rgba(255, 255, 255, 0.03) 25%,
-    rgba(255, 255, 255, 0.08) 50%,
-    rgba(255, 255, 255, 0.03) 75%
-  );
-  background-size: 200% 100%;
-  animation: shimmer 1.5s infinite;
-}
-
 /* Responsive */
 @media (max-width: 640px) {
-  .hero {
-    padding: 4rem 1rem 2rem;
+  .main {
+    padding: 5rem 1rem 3rem;
   }
   
   .dropZone {
