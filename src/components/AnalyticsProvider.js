@@ -2,7 +2,7 @@
 
 import { useEffect } from 'react';
 import posthog from 'posthog-js';
-import { POSTHOG_API_KEY, POSTHOG_HOST } from './config';
+import { POSTHOG_API_KEY, POSTHOG_HOST } from '@/lib/config';
 
 export default function AnalyticsProvider() {
   useEffect(() => {
