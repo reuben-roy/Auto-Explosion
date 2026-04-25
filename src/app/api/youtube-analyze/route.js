@@ -1,4 +1,5 @@
 import { NextResponse } from 'next/server';
+import JSZip from 'jszip';
 
 export async function POST(request) {
   try {
@@ -12,8 +13,16 @@ export async function POST(request) {
       );
     }
 
-    // Parse uploaded files
-    const parsedData = await parseTakeoutFiles(files);
+    // Check if this is a ZIP file or folder of files
+    let parsedData;
+    
+    if (files.length === 1 && files[0].name.endsWith('.zip')) {
+      // Handle ZIP upload
+      parsedData = await parseZipFile(files[0]);
+    } else {
+      // Handle folder upload
+      parsedData = await parseTakeoutFiles(files);
+    }
     
     // Process into analytics format
     const analytics = processIntoAnalytics(parsedData);
@@ -26,6 +35,44 @@ export async function POST(request) {
       { status: 500 }
     );
   }
+}
+
+async function parseZipFile(zipFile) {
+  const data = {
+    watchHistory: [],
+    searchHistory: [],
+    subscriptions: [],
+    playlists: [],
+    comments: [],
+  };
+
+  try {
+    const zip = new JSZip();
+    const contents = await zip.loadAsync(zipFile);
+    
+    for (const [filePath, file] of Object.entries(contents.files)) {
+      if (file.dir) continue; // Skip directories
+      
+      const content = await file.async('string');
+      
+      if (filePath.includes('watch-history.html') || filePath.includes('history/watch-history')) {
+        data.watchHistory = parseWatchHistory(content);
+      } else if (filePath.includes('search-history.html') || filePath.includes('history/search-history')) {
+        data.searchHistory = parseSearchHistory(content);
+      } else if (filePath.includes('subscriptions.csv') || filePath.includes('subscriptions/subscriptions')) {
+        data.subscriptions = parseSubscriptions(content);
+      } else if (filePath.includes('playlists.csv') || filePath.includes('playlists/playlists')) {
+        data.playlists = parsePlaylists(content);
+      } else if (filePath.includes('comments.csv') || filePath.includes('comments/comments')) {
+        data.comments = parseComments(content);
+      }
+    }
+  } catch (e) {
+    console.error('ZIP parsing error:', e);
+    throw new Error('Failed to read ZIP file: ' + e.message);
+  }
+  
+  return data;
 }
 
 async function parseTakeoutFiles(files) {
@@ -60,11 +107,7 @@ async function parseTakeoutFiles(files) {
 function parseWatchHistory(html) {
   const entries = [];
   
-  // Handle both formats:
-  // Format 1 (with channel): Watched <a href="...">Title</a><br><a href="...">Channel</a><br>Date
-  // Format 2 (no channel): Watched <a href="...">Title</a><br>Date (sometimes with extra text before date)
-
-  // More permissive regex - handle Unicode chars and various formats
+  // Handle both formats with and without channel
   const entryRegex = /Watched\s+<a[^>]+href="([^"]+)"[^>]*>([^<]+)<\/a>\s*<br>\s*(?:<a[^>]+href="([^"]+)"[^>]*>([^<]+)<\/a>\s*<br>\s*)?([A-Za-z]{3}\s+\d{1,2},\s+\d{4})/gi;
   
   let match;
@@ -76,21 +119,6 @@ function parseWatchHistory(html) {
       channelName: match[4] ? decodeHTMLEntities(match[4].trim()) : '',
       date: parseTakeoutDate(match[5]),
     });
-  }
-
-  // Also catch entries that have a different format (some older Takeouts)
-  if (entries.length === 0) {
-    // Fallback: try simpler pattern
-    const simpleRegex = /Watched\s+<a[^>]+href="([^"]+)"[^>]*>([^<]+)<\/a>\s*<br>\s*([A-Za-z]{3}\s+\d{1,2},\s+\d{4})/gi;
-    while ((match = simpleRegex.exec(html)) !== null) {
-      entries.push({
-        videoUrl: match[1],
-        videoTitle: decodeHTMLEntities(match[2].trim()),
-        channelUrl: '',
-        channelName: '',
-        date: parseTakeoutDate(match[3]),
-      });
-    }
   }
 
   return entries;
@@ -116,7 +144,6 @@ function parseSubscriptions(csv) {
   const lines = csv.split('\n').filter(line => line.trim());
   const subscriptions = [];
   
-  // Skip header if present
   const startIdx = lines[0]?.toLowerCase().includes('channel') ? 1 : 0;
   
   for (let i = startIdx; i < lines.length; i++) {
@@ -207,10 +234,8 @@ function decodeHTMLEntities(text) {
     '&#39;': "'",
     '&apos;': "'",
     '&nbsp;': ' ',
-    '&amp;': '&',
   };
   
-  // Handle numeric entities too
   return text.replace(/&(#\d+|[a-z]+);/gi, match => {
     if (match.startsWith('&#')) {
       return String.fromCharCode(parseInt(match.slice(2)));
@@ -221,7 +246,6 @@ function decodeHTMLEntities(text) {
 
 function parseTakeoutDate(dateStr) {
   try {
-    // Handle formats like "Mar 4, 2012, 11:54:25 PM MST"
     const cleaned = dateStr.replace(/\s+/g, ' ').trim();
     return new Date(cleaned).toISOString();
   } catch {
@@ -232,7 +256,6 @@ function parseTakeoutDate(dateStr) {
 function processIntoAnalytics(data) {
   const { watchHistory, searchHistory, subscriptions, playlists, comments } = data;
   
-  // Calculate stats
   const stats = {
     watchEvents: watchHistory.length,
     searchEvents: searchHistory.length,
@@ -241,15 +264,12 @@ function processIntoAnalytics(data) {
     comments: comments.length,
   };
 
-  // Handle empty data case
   if (stats.watchEvents === 0 && stats.searchEvents === 0) {
     return generateEmptyState();
   }
 
-  // Categorize content by analyzing channel names and video titles
   const categories = categorizeContent(watchHistory);
   
-  // Find top channels
   const channelCounts = {};
   watchHistory.forEach(entry => {
     const name = entry.channelName || 'Unknown';
@@ -263,7 +283,6 @@ function processIntoAnalytics(data) {
     .slice(0, 20)
     .map(([name, watchCount]) => ({ name, watchCount }));
 
-  // Top searches
   const searchCounts = {};
   searchHistory.forEach(entry => {
     const query = entry.query.toLowerCase();
@@ -277,7 +296,6 @@ function processIntoAnalytics(data) {
     .slice(0, 15)
     .map(([query, count]) => ({ query, count }));
 
-  // Generate summary text
   const summary = generateSummary(stats, categories);
 
   return {
@@ -296,68 +314,24 @@ function processIntoAnalytics(data) {
 
 function generateEmptyState() {
   return {
-    stats: {
-      watchEvents: 0,
-      searchEvents: 0,
-      subscriptions: 0,
-      playlists: 0,
-      comments: 0,
-    },
-    categories: [
-      { id: 'none', label: 'No Data', color: '#57534e', percentage: 100, summary: 'No watch history found in your Takeout export' },
-    ],
+    stats: { watchEvents: 0, searchEvents: 0, subscriptions: 0, playlists: 0, comments: 0 },
+    categories: [{ id: 'none', label: 'No Data', color: '#57534e', percentage: 100, summary: 'No watch history found in your Takeout export' }],
     topChannels: [],
     topSearches: [],
     summary: 'No YouTube data was found in the uploaded files. Make sure you selected YouTube in your Google Takeout export.',
-    rawData: {
-      hasWatchHistory: false,
-      hasSearchHistory: false,
-      dateRange: null,
-    },
+    rawData: { hasWatchHistory: false, hasSearchHistory: false, dateRange: null },
   };
 }
 
 function categorizeContent(watchHistory) {
-  // Category definitions with keywords
   const categoryDefs = [
-    {
-      id: 'tech-productivity',
-      label: 'Tech & Productivity',
-      color: '#67c1b8',
-      keywords: ['tech', 'review', 'code', 'programming', 'software', 'app', 'computer', 'laptop', 'phone', 'tutorial', 'learn', 'unbox', 'setup', 'build pc', 'gpu', 'cpu', 'apple', 'samsung', 'google', 'microsoft'],
-      summary: 'Your tool-focused learning lane',
-    },
-    {
-      id: 'gaming',
-      label: 'Gaming & Entertainment',
-      color: '#f2a65a',
-      keywords: ['game', 'gaming', 'playthrough', "let's play", 'minecraft', 'valorant', 'league', 'steam', 'gameplay', 'twitch', 'esports', 'fps', 'rpg'],
-      summary: 'The recreational and gaming content lane',
-    },
-    {
-      id: 'science-learning',
-      label: 'Science & Learning',
-      color: '#8fb8de',
-      keywords: ['science', 'physics', 'chemistry', 'math', 'documentary', 'history', 'nature', 'space', 'nasa', 'vsauce', 'kurzgesagt', 'veritasium', 'ted', 'education'],
-      summary: 'Curiosity and educational content',
-    },
-    {
-      id: 'news-politics',
-      label: 'News & Politics',
-      color: '#d96459',
-      keywords: ['news', 'politics', 'election', 'trump', 'biden', 'congress', 'parliament', 'government', 'cnn', 'fox', 'bbc'],
-      summary: 'Current events and geopolitical content',
-    },
-    {
-      id: 'creative',
-      label: 'Creative & Design',
-      color: '#d8c36a',
-      keywords: ['design', 'art', 'creative', 'animation', 'illustrator', 'photoshop', 'music', 'audio', 'production', 'drawing', 'painting', '3d', 'blender'],
-      summary: 'Creative skills and artistic content',
-    },
+    { id: 'tech-productivity', label: 'Tech & Productivity', color: '#67c1b8', keywords: ['tech', 'review', 'code', 'programming', 'software', 'app', 'computer', 'laptop', 'phone', 'tutorial', 'learn', 'unbox', 'setup', 'build pc', 'gpu', 'cpu', 'apple', 'samsung', 'google', 'microsoft', 'android', 'ios', 'windows', 'linux'], summary: 'Your tool-focused learning lane' },
+    { id: 'gaming', label: 'Gaming & Entertainment', color: '#f2a65a', keywords: ['game', 'gaming', 'playthrough', "let's play", 'minecraft', 'valorant', 'league', 'steam', 'gameplay', 'twitch', 'esports', 'fps', 'rpg', 'nintendo', 'playstation', 'xbox'], summary: 'The recreational and gaming content lane' },
+    { id: 'science-learning', label: 'Science & Learning', color: '#8fb8de', keywords: ['science', 'physics', 'chemistry', 'math', 'documentary', 'history', 'nature', 'space', 'nasa', 'vsauce', 'kurzgesagt', 'veritasium', 'ted', 'education', 'learn'], summary: 'Curiosity and educational content' },
+    { id: 'news-politics', label: 'News & Politics', color: '#d96459', keywords: ['news', 'politics', 'election', 'trump', 'biden', 'congress', 'parliament', 'government', 'cnn', 'fox', 'bbc', 'reuters'], summary: 'Current events and geopolitical content' },
+    { id: 'creative', label: 'Creative & Design', color: '#d8c36a', keywords: ['design', 'art', 'creative', 'animation', 'illustrator', 'photoshop', 'music', 'audio', 'production', 'drawing', 'painting', '3d', 'blender', 'after effects'], summary: 'Creative skills and artistic content' },
   ];
 
-  // Count watches per category
   const categoryCounts = {};
   categoryDefs.forEach(cat => categoryCounts[cat.id] = 0);
   let uncategorized = 0;
@@ -379,22 +353,17 @@ function categorizeContent(watchHistory) {
       if (matched) break;
     }
     
-    if (!matched) {
-      uncategorized++;
-    }
+    if (!matched) uncategorized++;
   });
 
-  // Calculate percentages
   const total = watchHistory.length || 1;
   const categories = categoryDefs.map(cat => ({
     ...cat,
     percentage: Math.round((categoryCounts[cat.id] / total) * 100),
   }));
 
-  // Sort by percentage
   categories.sort((a, b) => b.percentage - a.percentage);
   
-  // Group low-percentage categories into "Other"
   let otherPercent = 0;
   const categorized = categories.filter(cat => {
     if (cat.percentage < 5) {
@@ -405,13 +374,9 @@ function categorizeContent(watchHistory) {
   });
 
   if (otherPercent > 0 || uncategorized / total > 0.1) {
-    const otherFromCategories = otherPercent;
-    const otherUncategorized = Math.round((uncategorized / total) * 100);
     categorized.push({
-      id: 'other',
-      label: 'Other',
-      color: '#57534e',
-      percentage: otherFromCategories + otherUncategorized,
+      id: 'other', label: 'Other', color: '#57534e',
+      percentage: otherPercent + Math.round((uncategorized / total) * 100),
       summary: 'Content that does not fit the main categories',
     });
   }
@@ -421,44 +386,26 @@ function categorizeContent(watchHistory) {
 
 function generateSummary(stats, categories) {
   const topCategory = categories[0];
-  
   const parts = [];
   
   if (stats.watchEvents > 0) {
     parts.push(`You have watched ${stats.watchEvents.toLocaleString()} videos${stats.searchEvents > 0 ? ` and made ${stats.searchEvents.toLocaleString()} searches` : ''}.`);
   }
-  
   if (stats.subscriptions > 0) {
     parts.push(`You are subscribed to ${stats.subscriptions} channels${stats.playlists > 0 ? ` and have ${stats.playlists} playlists` : ''}.`);
   }
-  
   if (topCategory && topCategory.percentage > 10) {
     parts.push(`Your most watched category is ${topCategory.label.toLowerCase()}.`);
   }
-  
   if (stats.comments > 0) {
     parts.push(`You have left ${stats.comments} comments - engagement is real.`);
   }
 
-  if (parts.length === 0) {
-    return 'Your YouTube data reveals an eclectic mix of content preferences.';
-  }
-
-  return parts.join(' ');
+  return parts.length > 0 ? parts.join(' ') : 'Your YouTube data reveals an eclectic mix of content preferences.';
 }
 
 function getDateRange(watchHistory) {
   if (watchHistory.length === 0) return null;
-  
-  const dates = watchHistory
-    .map(entry => entry.date)
-    .filter(Boolean)
-    .sort();
-  
-  if (dates.length === 0) return null;
-  
-  return {
-    earliest: dates[0],
-    latest: dates[dates.length - 1],
-  };
+  const dates = watchHistory.map(entry => entry.date).filter(Boolean).sort();
+  return dates.length > 0 ? { earliest: dates[0], latest: dates[dates.length - 1] } : null;
 }

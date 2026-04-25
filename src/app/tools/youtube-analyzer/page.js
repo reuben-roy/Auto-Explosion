@@ -147,17 +147,16 @@ export default function YouTubeAnalyzerPage() {
                     <line x1="12" y1="3" x2="12" y2="15"/>
                   </svg>
                 </div>
-                <h2>Drop your YouTube Takeout folder here</h2>
+                <h2>Drop your YouTube Takeout ZIP file here</h2>
                 <p className={styles.orText}>or</p>
                 <label className={styles.fileButton}>
                   <input 
                     type="file" 
-                    webkitdirectory="true"
-                    directory="true"
+                    accept=".zip"
                     onChange={handleFileSelect}
                     className={styles.fileInput}
                   />
-                  Select YouTube Folder
+                  Select ZIP File
                 </label>
                 <div className={styles.instructions}>
                   <h4>How to get your data:</h4>
@@ -165,7 +164,7 @@ export default function YouTubeAnalyzerPage() {
                     <li>Go to <a href="https://takeout.google.com/" target="_blank" rel="noopener noreferrer">takeout.google.com</a></li>
                     <li>Select only YouTube or YouTube Music from the products list</li>
                     <li>Download and extract the ZIP file</li>
-                    <li>Upload the YouTube folder from inside the extracted files</li>
+                    <li>Re-zip the YouTube folder inside (or upload the extracted folder directly)</li>
                   </ol>
                 </div>
               </div>
