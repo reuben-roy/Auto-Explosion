@@ -52,6 +52,42 @@
   padding: 0 1rem;
 }
 
+.demoPrompt {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 1rem;
+  margin-bottom: 2rem;
+  padding: 1rem 1.5rem;
+  background: rgba(103, 193, 184, 0.08);
+  border: 1px solid rgba(103, 193, 184, 0.2);
+  border-radius: 12px;
+  flex-wrap: wrap;
+}
+
+.demoPrompt p {
+  color: #a1a1aa;
+  font-size: 0.95rem;
+  margin: 0;
+}
+
+.demoButton {
+  padding: 0.5rem 1.25rem;
+  background: transparent;
+  border: 1px solid #67c1b8;
+  border-radius: 8px;
+  color: #67c1b8;
+  font-size: 0.875rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.demoButton:hover {
+  background: #67c1b8;
+  color: #0a0a0f;
+}
+
 .dropZone {
   position: relative;
   border: 2px dashed rgba(103, 193, 184, 0.3);

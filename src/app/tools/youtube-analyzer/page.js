@@ -4,6 +4,49 @@ import { useState, useCallback } from 'react';
 import Navbar from '@/components/Navbar';
 import styles from './page.module.css';
 
+// Demo data for immediate testing
+const DEMO_DATA = {
+  stats: {
+    watchEvents: 69385,
+    searchEvents: 4827,
+    subscriptions: 156,
+    playlists: 12,
+    comments: 234,
+  },
+  categories: [
+    { id: 'tech', label: 'Tech & Productivity', color: '#67c1b8', percentage: 42, summary: 'Your tech-curious mind keeps coming back for gadgets, reviews, and tutorials' },
+    { id: 'creative', label: 'Creative & Entertainment', color: '#f2a65a', percentage: 28, summary: 'Animation, music, movies, and creative inspiration fill your queue' },
+    { id: 'learning', label: 'Science & Learning', color: '#8fb8de', percentage: 15, summary: 'Documentaries and deep dives into how things work' },
+    { id: 'gaming', label: 'Gaming & Streams', color: '#9b8de1', percentage: 10, summary: 'Let\'s plays, game reviews, and esports highlights' },
+    { id: 'other', label: 'Other', color: '#57534e', percentage: 5, summary: 'The eclectic mix of everything else' },
+  ],
+  topChannels: [
+    { name: 'Unbox Therapy', watchCount: 847 },
+    { name: 'Linus Tech Tips', watchCount: 623 },
+    { name: 'MKBHD', watchCount: 412 },
+    { name: 'Veritasium', watchCount: 389 },
+    { name: 'Nerdist', watchCount: 298 },
+    { name: 'Game Grumps', watchCount: 267 },
+    { name: 'Tom Scott', watchCount: 245 },
+    { name: 'TED', watchCount: 223 },
+    { name: 'Alie Ward', watchCount: 198 },
+    { name: 'Kurzgesagt', watchCount: 187 },
+  ],
+  topSearches: [
+    { query: 'how to fix', count: 127 },
+    { query: 'best phone 2026', count: 89 },
+    { query: 'unboxing', count: 76 },
+    { query: 'review', count: 65 },
+    { query: 'macbook', count: 54 },
+    { query: 'tesla', count: 48 },
+    { query: 'iphone', count: 45 },
+    { query: 'samsung', count: 41 },
+    { query: 'gaming laptop', count: 38 },
+    { query: 'vs code', count: 34 },
+  ],
+  summary: "You've watched 69,385 videos and made 4,827 searches. Your viewing habits skew heavily toward tech reviews and productivity content. You're subscribed to 156 channels and leave comments when you have something to say. The algorithm knows you well.",
+};
+
 export default function YouTubeAnalyzerPage() {
   const [uploadState, setUploadState] = useState('idle');
   const [error, setError] = useState(null);
@@ -57,6 +100,11 @@ export default function YouTubeAnalyzerPage() {
     }
   }, [handleFileUpload]);
 
+  const loadDemo = () => {
+    setData(DEMO_DATA);
+    setUploadState('done');
+  };
+
   return (
     <>
       <Navbar />
@@ -79,6 +127,13 @@ export default function YouTubeAnalyzerPage() {
 
         {(uploadState === 'idle' || uploadState === 'error') && (
           <section className={styles.uploadSection}>
+            <div className={styles.demoPrompt}>
+              <p>No data to upload? Try the demo with sample analytics.</p>
+              <button className={styles.demoButton} onClick={loadDemo}>
+                View Demo
+              </button>
+            </div>
+
             <div 
               className={styles.dropZone}
               onDrop={handleDrop}
