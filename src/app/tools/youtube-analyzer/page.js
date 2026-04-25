@@ -163,10 +163,11 @@ export default function YouTubeAnalyzerPage() {
                 </div>
                 <h2>Drop your YouTube Takeout ZIP file here</h2>
                 <p className={styles.orText}>or</p>
-                <label className={styles.fileButton}>
+                <label htmlFor="zip-upload" className={styles.fileButton}>
                   <input 
+                    id="zip-upload"
                     type="file" 
-                    accept=".zip"
+                    accept=".zip,application/zip"
                     onChange={handleFileSelect}
                     className={styles.fileInput}
                   />

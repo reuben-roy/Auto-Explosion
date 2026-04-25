@@ -112,6 +112,8 @@
   mask-composite: exclude;
   opacity: 0;
   transition: opacity 0.3s ease;
+  pointer-events: none;
+  z-index: 0;
 }
 
 .dropZone:hover::before {
@@ -121,6 +123,11 @@
 .dropZone:hover {
   border-color: transparent;
   background: rgba(103, 193, 184, 0.03);
+}
+
+.dropZoneContent {
+  position: relative;
+  z-index: 1;
 }
 
 .dropZoneContent h2 {
