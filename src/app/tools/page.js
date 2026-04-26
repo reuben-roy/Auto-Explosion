@@ -18,8 +18,23 @@ const tools = [
       </svg>
     ),
     href: '/tools/youtube-analyzer',
-    status: 'demo', // 'live' | 'demo' | 'coming-soon'
+    status: 'demo',
     category: 'Analytics',
+  },
+  {
+    id: 'goal-alignment',
+    name: 'Goal Alignment Check',
+    description: 'Are you actually working towards your goals? Enter your life goals and upload your YouTube data to see if your actions match your intentions.',
+    icon: (
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" width="32" height="32">
+        <circle cx="12" cy="12" r="10"/>
+        <circle cx="12" cy="12" r="6"/>
+        <circle cx="12" cy="12" r="2"/>
+      </svg>
+    ),
+    href: '/tools/goal-alignment',
+    status: 'live',
+    category: 'Self-Reflection',
   },
   {
     id: 'csv-visualizer',
