@@ -533,6 +533,297 @@
   }
 }
 
+/* KPI Detail */
+.kpiDetail {
+  font-size: 0.7rem;
+  color: #57534e;
+  margin-top: 0.25rem;
+}
+
+/* Section Grid */
+.sectionGrid {
+  display: grid;
+  grid-template-columns: 1fr 320px;
+  gap: 1.5rem;
+  margin-bottom: 2rem;
+}
+
+@media (max-width: 900px) {
+  .sectionGrid {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* Heatmap */
+.heatmapGrid {
+  display: grid;
+  grid-template-columns: 40px repeat(24, 1fr);
+  gap: 2px;
+}
+
+.heatmapLabel {
+  font-size: 0.65rem;
+  color: #71717a;
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  padding-right: 4px;
+}
+
+.heatmapCell {
+  aspect-ratio: 1;
+  border-radius: 3px;
+  min-height: 14px;
+  transition: transform 0.15s ease;
+}
+
+.heatmapCell:hover {
+  transform: scale(1.2);
+  z-index: 10;
+}
+
+.heatmapHourLabels {
+  grid-column: 2 / -1;
+  display: grid;
+  grid-template-columns: repeat(24, 1fr);
+  gap: 2px;
+  margin-top: 4px;
+}
+
+.heatmapHourLabel {
+  font-size: 0.55rem;
+  color: #57534e;
+  text-align: center;
+}
+
+/* Trend Chart */
+.trendChart {
+  display: flex;
+  align-items: flex-end;
+  gap: 4px;
+  height: 80px;
+  padding: 1rem 0;
+}
+
+.trendBar {
+  flex: 1;
+  background: linear-gradient(to top, #67c1b8, rgba(103, 193, 184, 0.4));
+  border-radius: 4px 4px 0 0;
+  transition: all 0.3s ease;
+  position: relative;
+  min-width: 20px;
+}
+
+.trendBar:hover {
+  background: linear-gradient(to top, #f2a65a, rgba(242, 166, 90, 0.4));
+}
+
+.trendBarLabel {
+  position: absolute;
+  bottom: -20px;
+  left: 50%;
+  transform: translateX(-50%);
+  font-size: 0.6rem;
+  color: #71717a;
+  white-space: nowrap;
+}
+
+.trendBarValue {
+  position: absolute;
+  top: -18px;
+  left: 50%;
+  transform: translateX(-50%);
+  font-size: 0.65rem;
+  color: #a1a1aa;
+  white-space: nowrap;
+  opacity: 0;
+  transition: opacity 0.2s ease;
+}
+
+.trendBar:hover .trendBarValue {
+  opacity: 1;
+}
+
+/* Domain Cards */
+.domainGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: 1rem;
+}
+
+.domainCard {
+  padding: 1.25rem;
+  background: rgba(0, 0, 0, 0.3);
+  border-radius: 12px;
+  border-left: 4px solid;
+  transition: all 0.2s ease;
+}
+
+.domainCard:hover {
+  background: rgba(0, 0, 0, 0.5);
+  transform: translateX(4px);
+}
+
+.domainHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 0.5rem;
+}
+
+.domainName {
+  font-weight: 600;
+  color: #f5f5f4;
+  font-size: 0.95rem;
+}
+
+.domainPercent {
+  font-weight: 700;
+  font-size: 1.1rem;
+}
+
+.domainStats {
+  display: flex;
+  gap: 1rem;
+  font-size: 0.75rem;
+  color: #71717a;
+  margin-bottom: 0.5rem;
+}
+
+.domainNarrative {
+  font-size: 0.8rem;
+  color: #a1a1aa;
+  line-height: 1.5;
+}
+
+/* Loyalty Creators */
+.loyaltyList {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.loyaltyItem {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0.75rem 1rem;
+  background: rgba(0, 0, 0, 0.3);
+  border-radius: 8px;
+  transition: all 0.2s ease;
+}
+
+.loyaltyItem:hover {
+  background: rgba(0, 0, 0, 0.5);
+}
+
+.loyaltyName {
+  color: #f5f5f4;
+  font-weight: 500;
+  font-size: 0.9rem;
+}
+
+.loyaltyScore {
+  font-size: 0.75rem;
+  color: #67c1b8;
+  font-weight: 600;
+}
+
+/* Comment Tone */
+.toneBar {
+  display: flex;
+  height: 12px;
+  border-radius: 6px;
+  overflow: hidden;
+  margin-bottom: 1rem;
+}
+
+.toneSegment {
+  transition: flex 0.3s ease;
+}
+
+.toneLegend {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1rem;
+}
+
+.toneLegendItem {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 0.8rem;
+  color: #a1a1aa;
+}
+
+.toneDot {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+}
+
+.toneCount {
+  font-weight: 600;
+  color: #f5f5f4;
+}
+
+/* Period Selector */
+.periodSelector {
+  display: flex;
+  gap: 0.5rem;
+  margin-bottom: 1rem;
+  flex-wrap: wrap;
+}
+
+.periodChip {
+  padding: 0.4rem 0.8rem;
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 9999px;
+  font-size: 0.75rem;
+  color: #a1a1aa;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.periodChip:hover {
+  background: rgba(255, 255, 255, 0.1);
+  color: #f5f5f4;
+}
+
+.periodChipActive {
+  background: #67c1b8;
+  border-color: #67c1b8;
+  color: #0a0a0f;
+}
+
+/* Subsection Title */
+.subsectionTitle {
+  font-size: 0.8rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: #57534e;
+  margin-bottom: 1rem;
+}
+
+/* Side Panel */
+.sidePanel {
+  background: rgba(255, 255, 255, 0.02);
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  border-radius: 16px;
+  padding: 1.5rem;
+}
+
+.sidePanelTitle {
+  font-size: 0.75rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: #67c1b8;
+  margin-bottom: 1rem;
+}
+
 /* Responsive */
 @media (max-width: 640px) {
   .main {
@@ -554,5 +845,13 @@
   
   .channelWatches {
     display: none;
+  }
+  
+  .heatmapGrid {
+    display: none;
+  }
+  
+  .domainGrid {
+    grid-template-columns: 1fr;
   }
 }
