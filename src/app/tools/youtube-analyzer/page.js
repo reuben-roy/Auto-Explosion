@@ -134,7 +134,7 @@ export default function YouTubeAnalyzerPage() {
                 <rect x="3" y="11" width="18" height="11" rx="2" ry="2"/>
                 <path d="M7 11V7a5 5 0 0 1 10 0v4"/>
               </svg>
-              <span>Your data never leaves your browser</span>
+              <span>Your data is processed securely and never stored</span>
             </div>
           </div>
         </section>
@@ -161,25 +161,30 @@ export default function YouTubeAnalyzerPage() {
                     <line x1="12" y1="3" x2="12" y2="15"/>
                   </svg>
                 </div>
-                <h2>Drop your YouTube Takeout ZIP file here</h2>
+                <h2>Drop your YouTube Takeout files here</h2>
                 <p className={styles.orText}>or</p>
-                <label htmlFor="zip-upload" className={styles.fileButton}>
-                  <input 
-                    id="zip-upload"
-                    type="file" 
-                    accept=".zip,application/zip"
-                    onChange={handleFileSelect}
-                    className={styles.fileInput}
-                  />
-                  Select ZIP File
-                </label>
+                <button 
+                  className={styles.fileButton}
+                  onClick={() => document.getElementById('file-upload').click()}
+                  type="button"
+                >
+                  Select Files
+                </button>
+                <input 
+                  id="file-upload"
+                  type="file" 
+                  accept=".zip,.json,.csv,application/zip,application/json,text/csv"
+                  onChange={handleFileSelect}
+                  className={styles.fileInput}
+                  multiple
+                />
                 <div className={styles.instructions}>
                   <h4>How to get your data:</h4>
                   <ol>
                     <li>Go to <a href="https://takeout.google.com/" target="_blank" rel="noopener noreferrer">takeout.google.com</a></li>
                     <li>Select only YouTube or YouTube Music from the products list</li>
-                    <li>Download and extract the ZIP file</li>
-                    <li>Re-zip the YouTube folder inside (or upload the extracted folder directly)</li>
+                    <li>Download the ZIP file and upload it directly, OR</li>
+                    <li>Extract the ZIP and upload individual files (watch-history.json, search-history.json, etc.)</li>
                   </ol>
                 </div>
               </div>

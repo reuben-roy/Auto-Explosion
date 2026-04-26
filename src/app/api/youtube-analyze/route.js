@@ -1,19 +1,10 @@
 import { NextResponse } from 'next/server';
-import { writeFile } from 'fs/promises';
-import { join } from 'path';
-import { processTakeout } from '../../../../scripts/process-youtube-takeout';
-
-export const config = {
-  api: {
-    bodyParser: false, // Handle manually for large files
-  },
-};
+import { processTakeoutFromBuffer, processFileContents } from '../../../../scripts/process-youtube-takeout.js';
 
 export async function POST(request) {
   try {
     console.log('API: Received request');
     
-    // Get form data
     const formData = await request.formData();
     const files = formData.getAll('files');
     
@@ -27,24 +18,38 @@ export async function POST(request) {
       );
     }
 
-    // Save the file temporarily
-    const file = files[0];
-    const tempPath = join('/tmp', `takeout-${Date.now()}.zip`);
+    let parsedData;
     
-    console.log('API: Saving to:', tempPath);
-    const bytes = await file.arrayBuffer();
-    await writeFile(tempPath, Buffer.from(bytes));
-    console.log('API: File saved, size:', bytes.byteLength);
-
-    // Process the Takeout
-    console.log('API: Starting processing...');
-    const parsedData = await processTakeout(tempPath);
+    const firstFile = files[0];
+    const isZip = firstFile.name.toLowerCase().endsWith('.zip') || firstFile.type === 'application/zip';
+    
+    if (isZip && files.length === 1) {
+      // Process ZIP file in memory
+      console.log('API: Processing ZIP file in memory...');
+      const bytes = await firstFile.arrayBuffer();
+      console.log('API: ZIP size:', bytes.byteLength);
+      
+      parsedData = await processTakeoutFromBuffer(bytes);
+    } else {
+      // Process individual files
+      console.log('API: Processing individual files...');
+      const fileContents = [];
+      
+      for (const file of files) {
+        const bytes = await file.arrayBuffer();
+        const content = new TextDecoder().decode(bytes);
+        fileContents.push({ name: file.name, content });
+        console.log('API: Read file:', file.name, 'size:', bytes.byteLength);
+      }
+      
+      parsedData = processFileContents(fileContents);
+    }
+    
     console.log('API: Processing complete:', {
       watchHistory: parsedData.watchHistory.length,
       searchHistory: parsedData.searchHistory.length,
     });
     
-    // Generate analytics
     const analytics = processIntoAnalytics(parsedData);
     console.log('API: Analytics generated');
     

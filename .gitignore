@@ -64,3 +64,6 @@ Thumbs.db
 firebase-debug.log
 firebase-debug.*.log
 .runtimeconfig.json
+
+# Takeout data files
+*.zip

@@ -1,94 +1,146 @@
-#!/usr/bin/env node
 /**
- * Server-side YouTube Takeout processor
- * Run on the Oracle instance to handle large ZIP files
+ * YouTube Takeout processor
+ * Processes ZIP files in-memory using JSZip
  */
 
-const fs = require('fs');
-const path = require('path');
-const { promisify } = require('util');
-const stream = require('stream');
-const pipeline = promisify(stream.pipeline);
+import JSZip from 'jszip';
 
-// Simple ZIP extraction using child_process and unzip
-const { execSync } = require('child_process');
-
-const UPLOAD_DIR = path.join(__dirname, '../tmp/uploads');
-const EXTRACT_DIR = path.join(__dirname, '../tmp/extracted');
-
-// Ensure directories exist
-[UPLOAD_DIR, EXTRACT_DIR].forEach(dir => {
-  if (!fs.existsSync(dir)) {
-    fs.mkdirSync(dir, { recursive: true });
-  }
-});
-
-async function processTakeout(zipPath) {
-  const extractPath = path.join(EXTRACT_DIR, Date.now().toString());
-  fs.mkdirSync(extractPath, { recursive: true });
+/**
+ * Process a ZIP file buffer in memory
+ * @param {Buffer|ArrayBuffer} zipBuffer - The ZIP file contents
+ * @returns {Promise<Object>} Parsed takeout data
+ */
+export async function processTakeoutFromBuffer(zipBuffer) {
+  console.log('Processing ZIP buffer, size:', zipBuffer.byteLength || zipBuffer.length);
+  
+  const data = {
+    watchHistory: [],
+    searchHistory: [],
+    subscriptions: [],
+    playlists: [],
+    comments: [],
+  };
 
   try {
-    // Extract ZIP
-    console.log('Extracting ZIP:', zipPath);
-    execSync(`unzip -q "${zipPath}" -d "${extractPath}"`, { timeout: 60000 });
-
-    // Find and parse files
-    const data = {
-      watchHistory: [],
-      searchHistory: [],
-      subscriptions: [],
-      playlists: [],
-      comments: [],
-    };
-
-    // Walk extracted directory
-    function walkDir(dir) {
-      const files = fs.readdirSync(dir);
-      for (const file of files) {
-        const fullPath = path.join(dir, file);
-        const stat = fs.statSync(fullPath);
-        if (stat.isDirectory()) {
-          walkDir(fullPath);
-        } else {
-          const content = fs.readFileSync(fullPath, 'utf8');
-          const fileName = path.basename(fullPath);
-          
-          if (fileName.includes('watch-history.html')) {
-            data.watchHistory = parseWatchHistory(content);
-          } else if (fileName.includes('search-history.html')) {
-            data.searchHistory = parseSearchHistory(content);
-          } else if (fileName.includes('subscriptions.csv')) {
-            data.subscriptions = parseSubscriptions(content);
-          } else if (fileName.includes('playlists.csv')) {
-            data.playlists = parsePlaylists(content);
-          } else if (fileName.includes('comments.csv')) {
-            data.comments = parseComments(content);
-          }
-        }
+    const zip = await JSZip.loadAsync(zipBuffer);
+    console.log('ZIP loaded, files:', Object.keys(zip.files).length);
+    
+    for (const [filePath, zipEntry] of Object.entries(zip.files)) {
+      if (zipEntry.dir) continue;
+      
+      const fileName = filePath.split('/').pop().toLowerCase();
+      
+      // Only process relevant files
+      const isRelevant = fileName.includes('watch-history') ||
+                        fileName.includes('search-history') ||
+                        fileName.includes('subscriptions') ||
+                        fileName.includes('playlists') ||
+                        fileName.includes('comments');
+      
+      if (!isRelevant) continue;
+      
+      console.log('Processing file:', filePath);
+      const content = await zipEntry.async('text');
+      
+      if (fileName.includes('watch-history')) {
+        const parsed = parseWatchHistory(content, fileName);
+        data.watchHistory.push(...parsed);
+      } else if (fileName.includes('search-history')) {
+        const parsed = parseSearchHistory(content, fileName);
+        data.searchHistory.push(...parsed);
+      } else if (fileName.includes('subscriptions')) {
+        data.subscriptions = parseSubscriptions(content);
+      } else if (fileName.includes('playlists')) {
+        data.playlists = parsePlaylists(content);
+      } else if (fileName.includes('comments')) {
+        data.comments = parseComments(content);
       }
     }
-
-    walkDir(extractPath);
-
-    // Cleanup
-    fs.rmSync(extractPath, { recursive: true, force: true });
-    fs.unlinkSync(zipPath);
-
+    
+    console.log('Parsing complete:', {
+      watchHistory: data.watchHistory.length,
+      searchHistory: data.searchHistory.length,
+      subscriptions: data.subscriptions.length,
+    });
+    
     return data;
   } catch (error) {
-    // Cleanup on error
-    try { fs.rmSync(extractPath, { recursive: true, force: true }); } catch {}
-    try { fs.unlinkSync(zipPath); } catch {}
-    throw error;
+    console.error('ZIP processing error:', error);
+    throw new Error('Failed to process ZIP file: ' + error.message);
   }
 }
 
-function parseWatchHistory(html) {
+/**
+ * Process individual file contents
+ * @param {Array<{name: string, content: string}>} files - Array of file objects
+ * @returns {Object} Parsed takeout data
+ */
+export function processFileContents(files) {
+  const data = {
+    watchHistory: [],
+    searchHistory: [],
+    subscriptions: [],
+    playlists: [],
+    comments: [],
+  };
+
+  for (const file of files) {
+    const fileName = file.name.toLowerCase();
+    const content = file.content;
+    
+    console.log('Processing file:', file.name);
+    
+    if (fileName.includes('watch-history')) {
+      const parsed = parseWatchHistory(content, fileName);
+      data.watchHistory.push(...parsed);
+    } else if (fileName.includes('search-history')) {
+      const parsed = parseSearchHistory(content, fileName);
+      data.searchHistory.push(...parsed);
+    } else if (fileName.includes('subscriptions')) {
+      data.subscriptions = parseSubscriptions(content);
+    } else if (fileName.includes('playlists')) {
+      data.playlists = parsePlaylists(content);
+    } else if (fileName.includes('comments')) {
+      data.comments = parseComments(content);
+    }
+  }
+
+  return data;
+}
+
+function parseWatchHistory(content, fileName) {
   const entries = [];
+  
+  // Try JSON format first (newer Takeout exports)
+  if (fileName.endsWith('.json') || content.trim().startsWith('[')) {
+    try {
+      const data = JSON.parse(content);
+      if (Array.isArray(data)) {
+        for (const item of data) {
+          // Handle both "Watched X" and direct video entries
+          const title = item.title || '';
+          const isWatched = title.startsWith('Watched ');
+          
+          entries.push({
+            videoUrl: item.titleUrl || '',
+            videoTitle: isWatched ? title.replace(/^Watched\s+/, '') : title,
+            channelUrl: item.subtitles?.[0]?.url || '',
+            channelName: item.subtitles?.[0]?.name || '',
+            date: item.time || new Date().toISOString(),
+          });
+        }
+        return entries;
+      }
+    } catch (e) {
+      console.log('JSON parse failed, trying HTML parsing:', e.message);
+    }
+  }
+  
+  // HTML format (older Takeout exports)
   const entryRegex = /Watched\s+<a[^>]+href="([^"]+)"[^>]*>([^<]+)<\/a>\s*<br>\s*(?:<a[^>]+href="([^"]+)"[^>]*>([^<]+)<\/a>\s*<br>\s*)?([A-Za-z]{3}\s+\d{1,2},\s+\d{4})/gi;
   
   let match;
-  while ((match = entryRegex.exec(html)) !== null) {
+  while ((match = entryRegex.exec(content)) !== null) {
     entries.push({
       videoUrl: match[1],
       videoTitle: decodeHTMLEntities(match[2].trim()),
@@ -100,12 +152,37 @@ function parseWatchHistory(html) {
   return entries;
 }
 
-function parseSearchHistory(html) {
+function parseSearchHistory(content, fileName) {
   const entries = [];
+  
+  // Try JSON format first (newer Takeout exports)
+  if (fileName.endsWith('.json') || content.trim().startsWith('[')) {
+    try {
+      const data = JSON.parse(content);
+      if (Array.isArray(data)) {
+        for (const item of data) {
+          const title = item.title || '';
+          const isSearch = title.startsWith('Searched for ');
+          
+          if (isSearch || item.query) {
+            entries.push({
+              query: isSearch ? title.replace(/^Searched for\s+/, '') : (item.query || title),
+              date: item.time || new Date().toISOString(),
+            });
+          }
+        }
+        return entries;
+      }
+    } catch (e) {
+      console.log('JSON parse failed, trying HTML parsing:', e.message);
+    }
+  }
+  
+  // HTML format (older Takeout exports)
   const entryRegex = /Searched for\s+<a[^>]+href="[^"]*"[^>]*>([^<]+)<\/a>\s*<br>\s*([A-Za-z]{3}\s+\d{1,2},\s+\d{4})/gi;
   
   let match;
-  while ((match = entryRegex.exec(html)) !== null) {
+  while ((match = entryRegex.exec(content)) !== null) {
     entries.push({
       query: decodeHTMLEntities(match[1].trim()),
       date: parseTakeoutDate(match[2]),
@@ -210,4 +287,3 @@ function parseTakeoutDate(dateStr) {
   }
 }
 
-module.exports = { processTakeout, UPLOAD_DIR };
