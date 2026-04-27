@@ -47,7 +47,7 @@ export default function Navbar() {
                         className={`${styles.link} ${pathname?.startsWith('/tools') ? styles.active : ''}`}
                         onClick={closeMenu}
                     >
-                        <span className={styles.toolsBadge}>Tools</span>
+                        Tools
                     </Link>
                     <DropdownMenu onClose={closeMenu} />
                     <ProjectsDropdown onClose={closeMenu} />

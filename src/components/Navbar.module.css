@@ -51,23 +51,7 @@
   background: rgba(255, 255, 255, 0.1);
 }
 
-.toolsBadge {
-  display: inline-flex;
-  align-items: center;
-  padding: 0.25rem 0.75rem;
-  background: linear-gradient(135deg, #67c1b8 0%, #4a9e96 100%);
-  color: #0a0a0f;
-  font-weight: 600;
-  font-size: 0.8rem;
-  border-radius: 20px;
-  text-transform: uppercase;
-  letter-spacing: 0.05em;
-}
 
-.toolsBadge:hover {
-  background: linear-gradient(135deg, #7dd4cf 0%, #5fb8b0 100%);
-  opacity: 1;
-}
 
 .menuButton {
   display: none;
