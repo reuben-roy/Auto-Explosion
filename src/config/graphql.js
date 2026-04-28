@@ -27,6 +27,32 @@ const BASE_POST_FIELDS = `
   }
 `;
 
+// Lightweight fields for list views (no full content — saves ~300KB on homepage)
+const LIST_POST_FIELDS = `
+  title
+  date
+  slug
+  author {
+    node {
+      name
+      firstName
+      lastName
+    }
+  }
+  featuredImage {
+    node {
+      sourceUrl
+      altText
+    }
+  }
+  categories {
+    nodes {
+      name
+      slug
+    }
+  }
+`;
+
 // Category-specific score fields
 const ANIME_FIELDS = `
   anime {
@@ -164,12 +190,12 @@ export const SIDETRACK_POSTS_QUERY = `
   }
 `;
 
-// Query for listing posts
+// Query for listing posts (lightweight — no full post content)
 export const POSTS_LIST_QUERY = `
   query GetPosts {
     posts(first: 100) {
       nodes {
-        ${BASE_POST_FIELDS}
+        ${LIST_POST_FIELDS}
         ${ANIME_FIELDS}
         ${MANGA_FIELDS}
         ${MOVIE_FIELDS}

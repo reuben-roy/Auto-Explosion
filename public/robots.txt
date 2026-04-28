@@ -1,0 +1,7 @@
+User-agent: *
+Allow: /
+
+Disallow: /api/
+Disallow: /side-track/support/
+
+Sitemap: https://auto.explosion.fun/sitemap.xml
